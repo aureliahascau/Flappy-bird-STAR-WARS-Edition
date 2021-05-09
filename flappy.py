@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #!/usr/bin/env python3
 
 import pygame, sys, random
@@ -22,3 +23,7 @@ while True:
 # pt a da flip la surface : pygame.transform.flip(surface,False,True) - flip pe y
 # pt rotatie : pygame.transform.rotozoom(surface, unghiul cu care vrem sa facem rotatia,1)
 
+=======
+print(Testing commit)
+print("uwduiw")
+>>>>>>> ae8b9472dd6d27e33efc74b4d3fe2232b9bdf57f
