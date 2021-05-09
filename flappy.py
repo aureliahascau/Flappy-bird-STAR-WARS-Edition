@@ -6,10 +6,15 @@ pygame.display.set_caption('Flappy Bird')
 clock = pygame.time.Clock()
 window = pygame.display.set_mode((500,700))   #dimensiunile alese astfel incat imaginea
                                              #de fundal sa fie jumatate din acestea  
-img_surface = pygame.image.load('img/mobile.jpg')  
+
+img_surface = pygame.image.load('img/mobile.jpg')
+
+game_font = pygame.font.Font('FONT.ttf', 30)
 
 ship_surface = pygame.image.load('img/spaceship.png') 
 ship_rect = ship_surface.get_rect(center = (150, 450))
+
+ship_rect = pygame.Rect((30, 350), (80, 60))
 
 # Different images for the asteroids
 
@@ -18,11 +23,13 @@ asteroid_list = []
 
 ast_surface1 = pygame.transform.scale(pygame.image.load("asteroid1.png"), (100, 100))
 ast_surface2 = pygame.transform.scale(pygame.image.load("asteroid2.png"), (100, 100))
-ast_surface3 = pygame.transform.scale(pygame.image.load("asteroid3.png"), (120, 120))
+ast_surface3 = pygame.transform.scale(pygame.image.load("asteroid3.png"), (100, 100))
 
 asteroid_images.append(ast_surface1)
 asteroid_images.append(ast_surface2)
 asteroid_images.append(ast_surface3)
+
+score = 0
 
 def create_asteroid(positionY):
     selected_asteroid = random.choice(asteroid_images)
@@ -38,17 +45,31 @@ def draw_asteroid(asteroids):
     for asteroid_tuple in asteroids:
         window.blit(asteroid_tuple[1], asteroid_tuple[0])
 
+def score_display():
+    score_surface = game_font.render(str(int(score)), True, (255, 255, 255))
+    score_rect = score_surface.get_rect(center = (250, 50))
+    window.blit(score_surface, score_rect)
+
 # Collision system
 
-# def check_for_crash(asteroids):
-#     for asteroid_tuple in asteroids:
-#         if ship_rect.colliderect(asteroid_tuple[0]):
-#             print('collision')
+def check_for_crash(asteroids):
+    for asteroid_tuple in asteroids:
+        if ship_rect.colliderect(asteroid_tuple[0]):
+            return True
+
+    if ship_rect.top <= 0 or ship_rect.bottom >= 700:
+        return True
+
+    return False
 
 # Movement on the y axis for the spaceshit
 
 ship_position = 0
 gravity = 0.05
+
+
+
+MENU = True
 
 SPAWNOBSTACLE = pygame.USEREVENT
 
@@ -70,13 +91,19 @@ while True:
             sys.exit()
         
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
+            if event.key == pygame.K_SPACE and MENU == False:
+                ship_position = 0
+                ship_position -= 3
+            if event.key == pygame.K_SPACE and MENU == True:
+                MENU = False
+                asteroid_list.clear()
+                ship_rect.centery = 350
                 ship_position = 0
                 ship_position -= 3
 
         # Spawning asteroird every 1.1 seconds
         
-        if event.type == SPAWNOBSTACLE:
+        if event.type == SPAWNOBSTACLE and MENU == False:
             number_of_asteroids = random.randint(1, 3)
             if number_of_asteroids == 1:
                 asteroid_list.append(create_asteroid(random.randint(100, 600)))
@@ -86,7 +113,6 @@ while True:
                 asteroid_list.append(create_asteroid(position[0]))
                 asteroid_list.append(create_asteroid(position[1]))
 
-
     # Loading background
 
     window.blit(pygame.transform.scale(img_surface, (500, 700)), (0, 0))
@@ -94,22 +120,32 @@ while True:
     # Drawing the spaceship
 
     window.blit(pygame.transform.scale(ship_surface, (80, 60)), ship_rect)
-    # check_for_crash(asteroid_list)
+    check_for_crash(asteroid_list)
 
-    # Spaceship movement on Y axis
+    if MENU == False:
+        # Spaceship movement on Y axis
 
-    ship_position += gravity
-    ship_rect.centery += ship_position
+        ship_position += gravity
+        ship_rect.centery += ship_position
 
-    # Generating and drawing asteroids
+        # Generating and drawing asteroids
 
-    asteroid_list = move_asteroid(asteroid_list)
-    
-    draw_asteroid(asteroid_list)
+        asteroid_list = move_asteroid(asteroid_list)
+        
+        draw_asteroid(asteroid_list)
+
+        if check_for_crash(asteroid_list):
+            MENU = True
+
+        score_display()
+        score += 0.01
+            
+    if MENU == True:
+        score = 0
 
     pygame.display.update()
 
-    clock.tick(90)  
+    clock.tick(100)  
 
 
 #pentru a pune pipe-uri se creeaza o lista de rectangles 
