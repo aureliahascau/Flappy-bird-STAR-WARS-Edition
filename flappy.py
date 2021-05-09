@@ -4,17 +4,20 @@ pygame.init()
 
 pygame.display.set_caption('Flappy Bird')
 clock = pygame.time.Clock()
-window = pygame.display.set_mode((500,700))   #dimensiunile alese astfel incat imaginea
-                                             #de fundal sa fie jumatate din acestea  
+window = pygame.display.set_mode((500,700))   
+                                               
 
 img_surface = pygame.image.load('img/mobile.jpg')
 
-game_font = pygame.font.Font('FONT.ttf', 30)
+game_font = pygame.font.Font('flappy_font.TTF', 26)
+game_font2 = pygame.font.Font('flappy_font.TTF', 35)
 
 ship_surface = pygame.image.load('img/spaceship.png') 
 ship_rect = ship_surface.get_rect(center = (150, 450))
 
 ship_rect = pygame.Rect((30, 350), (80, 60))
+sound = pygame.mixer.Sound('mars.wav')
+
 
 # Different images for the asteroids
 
@@ -30,6 +33,7 @@ asteroid_images.append(ast_surface2)
 asteroid_images.append(ast_surface3)
 
 score = 0
+high_score=0
 
 def create_asteroid(positionY):
     selected_asteroid = random.choice(asteroid_images)
@@ -45,10 +49,19 @@ def draw_asteroid(asteroids):
     for asteroid_tuple in asteroids:
         window.blit(asteroid_tuple[1], asteroid_tuple[0])
 
-def score_display():
-    score_surface = game_font.render(str(int(score)), True, (255, 255, 255))
-    score_rect = score_surface.get_rect(center = (250, 50))
-    window.blit(score_surface, score_rect)
+def score_display(game_state):
+    if game_state == 'main_game':
+        score_surface = game_font.render(f'Score: {int(score)}', True, (255, 255, 255))
+        score_rect = score_surface.get_rect(center = (250, 50))
+        window.blit(score_surface, score_rect)
+        
+    if game_state == 'game_over':
+        score_surface = game_font.render(f'Score: {int(score)}', True, (255, 255, 255))
+        score_rect = score_surface.get_rect(center = (250, 50))
+        window.blit(score_surface, score_rect)
+        high_score_surface = game_font.render(f'High score: {int(high_score)}', True, (255, 255, 255))
+        high_score_rect = high_score_surface.get_rect(center = (250, 650))
+        window.blit(high_score_surface, high_score_rect)
 
 # Collision system
 
@@ -61,6 +74,13 @@ def check_for_crash(asteroids):
         return True
 
     return False
+
+
+def update_score(score,high_score):
+    if score > high_score:
+        high_score = score
+    return high_score
+
 
 # Movement on the y axis for the spaceshit
 
@@ -75,6 +95,7 @@ SPAWNOBSTACLE = pygame.USEREVENT
 
 pygame.time.set_timer(SPAWNOBSTACLE, 1100)
 
+
 def get_rand_position():
     pos1 = random.randint(100, 600)
     pos2 = random.randint(100, 600)
@@ -86,6 +107,7 @@ def get_rand_position():
 
 while True:
     for event in pygame.event.get():
+        sound.play()
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
@@ -100,6 +122,7 @@ while True:
                 ship_rect.centery = 350
                 ship_position = 0
                 ship_position -= 3
+                score=0
 
         # Spawning asteroird every 1.1 seconds
         
@@ -119,10 +142,11 @@ while True:
 
     # Drawing the spaceship
 
-    window.blit(pygame.transform.scale(ship_surface, (80, 60)), ship_rect)
+    
     check_for_crash(asteroid_list)
 
     if MENU == False:
+        window.blit(pygame.transform.scale(ship_surface, (80, 60)), ship_rect)
         # Spaceship movement on Y axis
 
         ship_position += gravity
@@ -137,21 +161,23 @@ while True:
         if check_for_crash(asteroid_list):
             MENU = True
 
-        score_display()
+        # Getting score and high score
+
         score += 0.01
-            
-    if MENU == True:
-        score = 0
+        score_display('main_game')
+    else:
+        draw_asteroid(asteroid_list)
+        game_surface = game_font2.render("Get ready!", True, (255,0,0))
+        game_rect = game_surface.get_rect(center = (250, 350))
+        window.blit(game_surface, game_rect)
+        high_score = update_score(score,high_score)
+        score_display('game_over')
+        
 
     pygame.display.update()
 
     clock.tick(100)  
 
 
-#pentru a pune pipe-uri se creeaza o lista de rectangles 
-# se creeaza o a 2 a lista ce contine toate inaltimile posibile ale pipe urilor
-# din lista se vor lua cu random
-# pt a da flip la surface : pygame.transform.flip(surface,False,True) - flip pe y
-# pt rotatie : pygame.transform.rotozoom(surface, unghiul cu care vrem sa facem rotatia,1)
 
 
