@@ -1,1 +1,1 @@
-score
+pygame.image.load('img/explosion.png')
