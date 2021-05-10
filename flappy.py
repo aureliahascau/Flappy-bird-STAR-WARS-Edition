@@ -2,13 +2,14 @@ import pygame, sys, random
 
 pygame.init()
 
-pygame.display.set_caption('Flappy Bird')
+pygame.display.set_caption('Flappy Bird, STAR WARS Edition')
 clock = pygame.time.Clock()
 window = pygame.display.set_mode((500,700))   
 
-
+# Background
                                               
 img_surface = pygame.image.load('img/mobile.jpg')
+background_image = pygame.transform.scale(img_surface, (500, 700))
 
 # Fonts
 
@@ -17,21 +18,21 @@ game_font2 = pygame.font.Font('flappy_font.TTF', 35)
 
 # Ship's image and hitbox
 
-ship_surface = pygame.image.load('img/spaceship.png') 
+ship_surface = pygame.image.load('img/spaceship.png')
 ship_rect = ship_surface.get_rect(center = (150, 450))
 ship_rect = pygame.Rect((30, 350), (80, 60))
+ship_image = pygame.transform.scale(ship_surface, (80, 60))
 
 # Background sound
 
 background_music = pygame.mixer.Sound('sounds/mars.wav')
-background_music.set_volume(0.25)
-
+background_music.set_volume(1.0)
 
 # Explosion image & sound
 
 exp_surface = pygame.transform.scale(pygame.image.load('img/explosion.png'),(120, 160))
 exp_sound = pygame.mixer.Sound('sounds/explosion.wav')
-exp_sound.set_volume(0.5)
+exp_sound.set_volume(0.75)
 
 # Creating 3 types of asteroids 
 
@@ -51,7 +52,7 @@ asteroid_images.append(ast_surface3)
 def create_asteroid(positionY):
     selected_asteroid = random.choice(asteroid_images)
     asteroid = selected_asteroid.get_rect(midtop = (800, positionY))
-    return (asteroid, selected_asteroid)
+    return (asteroid, selected_asteroid) # Returing tuple of the asteroid and it's image
 
 def move_asteroid(asteroids):
     for asteroid_tuple in asteroids:
@@ -69,7 +70,9 @@ def remove_asteroid(asteroids):
             del asteroids[i]
         i += 1
 
-def get_rand_position(): # Function to make sure that two asteroids don't spawn in the same place
+# Function to make sure that two asteroids don't spawn in the same place
+
+def get_rand_position(): 
     pos1 = random.randint(100, 600)
     pos2 = random.randint(100, 600)
 
@@ -123,10 +126,11 @@ def update_score(score,high_score):
         high_score = score
     return high_score
 
+# Player gets one point every time the ship passes an asteroid
+
 def explosion_position(hitbox):
     explosion_rect = pygame.Rect((hitbox.left + 15, hitbox.top - 50), (80, 80))
     return explosion_rect
-
 
 # Movement on the y axis for the spaceshit
 
@@ -136,15 +140,16 @@ gravity = 0.05
 MENU = True
 FIRST_TIME_OPENED = True
 
+# Generating an asteroid 
+
 SPAWNOBSTACLE = pygame.USEREVENT
 
 pygame.time.set_timer(SPAWNOBSTACLE, 1100)
 
-
+pygame.mixer.Channel(0).play(background_music)
 
 while True:
     for event in pygame.event.get():
-        pygame.mixer.Channel(0).play(background_music)
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
@@ -165,21 +170,26 @@ while True:
         # Spawning asteroird every 1.1 seconds
         
         if event.type == SPAWNOBSTACLE and MENU == False:
-            number_of_asteroids = random.randint(1, 4)
+            number_of_asteroids = random.randint(1, 3) # 1 in 3 chance to spawn 2 asteroids in the same line
             if number_of_asteroids == 1:
-                asteroid_list.append(create_asteroid(random.randint(100, 600)))
-            else:
                 position = get_rand_position()
-
                 asteroid_list.append(create_asteroid(position[0]))
-                asteroid_list.append(create_asteroid(position[1]))
+                asteroid_list.append(create_asteroid(position[1]))             
+            else:
+                asteroid_list.append(create_asteroid(random.randint(100, 600)))
+
+                
 
     # Loading background
 
-    window.blit(pygame.transform.scale(img_surface, (500, 700)), (0, 0))
+    window.blit(background_image, (0, 0))
 
     if MENU == False:
-        window.blit(pygame.transform.scale(ship_surface, (80, 60)), ship_rect)
+
+        # Loading ship
+
+        window.blit(ship_image, ship_rect)
+
         # Spaceship movement on Y axis
 
         ship_position += gravity
@@ -207,16 +217,17 @@ while True:
     
     else:
         draw_asteroid(asteroid_list)
-        window.blit(pygame.transform.scale(ship_surface, (80, 60)), ship_rect)
+        window.blit(ship_image, ship_rect)
 
         if FIRST_TIME_OPENED == True:
             game_surface = game_font2.render("Get ready!", True, (255,0,0))
         else:
             game_surface = game_font2.render("You lost!", True, (255,0,0))
             window.blit(exp_surface, explosion_position(ship_rect))
+
         game_rect = game_surface.get_rect(center = (250, 350))
         window.blit(game_surface, game_rect)
-        high_score = update_score(score,high_score)
+        high_score = update_score(score, high_score)
         score_display('game_over')
         
 
