@@ -76,7 +76,7 @@ def get_rand_position():
     pos1 = random.randint(100, 600)
     pos2 = random.randint(100, 600)
 
-    while abs(pos1 - pos2) < 150:
+    while abs(pos1 - pos2) < 150: # Distance between two asteroids must be bigger than 150
         pos1 = random.randint(100, 600)
     
     return (pos1, pos2)
@@ -84,11 +84,16 @@ def get_rand_position():
 # Displaying score functions
 
 def score_display(game_state):
+
+    # While playing the game, only current score is displayed
+
     if game_state == 'main_game':
         score_surface = game_font.render(f'Score: {int(score)}', True, (255, 255, 255))
         score_rect = score_surface.get_rect(center = (250, 50))
         window.blit(score_surface, score_rect)
         
+    # Displays score and the high score when in game menu
+
     if game_state == 'game_over':
         score_surface = game_font.render(f'Score: {int(score)}', True, (255, 255, 255))
         score_rect = score_surface.get_rect(center = (250, 50))
@@ -140,7 +145,7 @@ gravity = 0.05
 MENU = True
 FIRST_TIME_OPENED = True
 
-# Generating an asteroid 
+# Generating an asteroid is an event
 
 SPAWNOBSTACLE = pygame.USEREVENT
 
@@ -149,17 +154,21 @@ pygame.time.set_timer(SPAWNOBSTACLE, 1100)
 pygame.mixer.Channel(0).play(background_music)
 
 while True:
+
+    pygame.display.update()
+    clock.tick(100) # Tickrate
+
     for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+        if event.type == pygame.QUIT: # Allows the game to be closed using 'X'
             pygame.quit()
             sys.exit()
         
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE and MENU == False:
+        if event.type == pygame.KEYDOWN: 
+            if event.key == pygame.K_SPACE and MENU == False: # Spaceship going up and while playing the game
                 ship_position = 0
                 ship_position -= 3
                 
-            if event.key == pygame.K_SPACE and MENU == True:
+            if event.key == pygame.K_SPACE and MENU == True: # Exits the main menu, makes the first move and clears all objects 
                 MENU = False
                 asteroid_list.clear()
                 ship_rect.centery = 350
@@ -184,7 +193,7 @@ while True:
 
     window.blit(background_image, (0, 0))
 
-    if MENU == False:
+    if MENU == False: # While game is running
 
         # Loading ship
 
@@ -204,36 +213,36 @@ while True:
 
         # Crash detection
 
-        if check_for_crash(asteroid_list):
+        if check_for_crash(asteroid_list): # Upon crashing, the game directs you to the main menu
             MENU = True
             FIRST_TIME_OPENED = False
             pygame.mixer.Channel(1).play(exp_sound)
             
-        # Getting score and high score
+        # Getting current score
 
         score += add_points(asteroid_list)
 
         score_display('main_game')
     
-    else:
+    else: # While in game menu
+
+        # Draw ship and asteroids when losing the game
+
         draw_asteroid(asteroid_list)
         window.blit(ship_image, ship_rect)
 
         if FIRST_TIME_OPENED == True:
-            game_surface = game_font2.render("Get ready!", True, (255,0,0))
+            game_surface = game_font2.render("Get ready!", True, (255,0,0)) # Greeting message when you enter the game 
         else:
-            game_surface = game_font2.render("You lost!", True, (255,0,0))
-            window.blit(exp_surface, explosion_position(ship_rect))
+            game_surface = game_font2.render("You lost!", True, (255,0,0)) # Game message when you lose
+            window.blit(exp_surface, explosion_position(ship_rect)) # When a crash is detected, an explosion appears
+
+        # The score and high score are always displayed while in game menu
 
         game_rect = game_surface.get_rect(center = (250, 350))
         window.blit(game_surface, game_rect)
         high_score = update_score(score, high_score)
         score_display('game_over')
-        
-
-    pygame.display.update()
-
-    clock.tick(100)  
 
 
 
